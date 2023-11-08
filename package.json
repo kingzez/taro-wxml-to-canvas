@@ -1,6 +1,6 @@
 {
   "name": "taro-wxml-to-canvas",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "browser": "dist/index.umd.js",
   "module": "dist/index.esm.js",
   "main": "dist/index.js",
