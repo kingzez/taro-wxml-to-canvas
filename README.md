@@ -12,7 +12,7 @@ wxml-to-canvas for Taro，小程序内通过静态模板和样式绘制 canvas�
 import WxmlToCanvas from 'taro-wxml-to-canvas'
 
 export default class Poster extends Component<Props, State> {
-  private canvasRef: RefObject<WXMLToCanvas>
+  private canvasRef: RefObject<WxmlToCanvas>
   private canvasWidth = Taro.getSystemInfoSync().windowWidth || 375
   private canvasHeight = Taro.getSystemInfoSync().windowHeight || 600
 

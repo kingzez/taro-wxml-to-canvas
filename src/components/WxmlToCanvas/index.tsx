@@ -33,10 +33,11 @@ type CopyArgsType = {
 }
 
 export default class WXMLToCanvas extends Component<Props, State> {
-  ctx: CanvasContext | undefined
-  canvas: Taro.Canvas | undefined
-  dpr: number
-  boundary: {
+  private ctx: CanvasContext | undefined
+  private canvas: Taro.Canvas | undefined
+  private canvasInit: Promise<boolean>
+  private dpr: number
+  private boundary: {
     top: number
     left: number
     width: number
@@ -50,33 +51,38 @@ export default class WXMLToCanvas extends Component<Props, State> {
   }
 
   componentDidMount() {
-    const { SDKVersion, pixelRatio: dpr } = Taro.getSystemInfoSync()
-    const use2dCanvas = compareVersion(SDKVersion, '2.9.2') >= 0
-    this.dpr = dpr
-    this.setState({ use2dCanvas }, () => {
-      if (use2dCanvas) {
-        const query = Taro.createSelectorQuery()
-        query
-          .select(`#${canvasId}`)
-          .fields({ node: true, size: true })
-          .exec(
-            (res: { node: Taro.Canvas; width: number; height: number }[]) => {
-              const canvas = res[0].node
-              const ctx = canvas.getContext('2d') as CanvasContext
-              canvas.width = res[0].width * dpr
-              canvas.height = res[0].height * dpr
-              ctx.scale(dpr, dpr)
-              this.ctx = ctx
-              this.canvas = canvas
-            }
-          )
-      } else {
-        this.ctx = Taro.createCanvasContext(canvasId, this)
-      }
+    this.canvasInit = new Promise(resolve => {
+      const { SDKVersion, pixelRatio: dpr } = Taro.getSystemInfoSync()
+      const use2dCanvas = compareVersion(SDKVersion, '2.9.2') >= 0
+      this.dpr = dpr
+      this.setState({ use2dCanvas }, () => {
+        if (use2dCanvas) {
+          const query = Taro.createSelectorQuery()
+          query
+            .select(`#${canvasId}`)
+            .fields({ node: true, size: true })
+            .exec(
+              (res: { node: Taro.Canvas; width: number; height: number }[]) => {
+                const canvas = res[0].node
+                const ctx = canvas.getContext('2d') as CanvasContext
+                canvas.width = res[0].width * dpr
+                canvas.height = res[0].height * dpr
+                ctx.scale(dpr, dpr)
+                this.ctx = ctx
+                this.canvas = canvas
+                resolve(true)
+              }
+            )
+        } else {
+          this.ctx = Taro.createCanvasContext(canvasId, this)
+          resolve(true)
+        }
+      })
     })
   }
 
   async renderToCanvas(args: { wxml: string; style: string }) {
+    await this.canvasInit
     const { wxml, style } = args
     const ctx = this.ctx
     const canvas = this.canvas
